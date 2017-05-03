@@ -27,20 +27,20 @@
 # next to all the things you'll want to change. Once you've handled
 # them, you can save this file and test your package like this:
 #
-#     spack install cetbuildtools
+#     spack install cetlib-except
 #
 # You can edit this file again by typing:
 #
-#     spack edit cetbuildtools
+#     spack edit cetlib-except
 #
 # See the Spack documentation for more information on packaging.
 # If you submit this package back to Spack as a pull request,
 # please first remove this boilerplate and all FIXME comments.
 #
 from spack import *
-from spack.environment import *
 
-class Cetbuildtools(Package):
+
+class CetlibExcept(Package):
     """FIXME: Put a proper description of your package here."""
 
     # FIXME: Add a proper url for your package's homepage here.
@@ -49,35 +49,26 @@ class Cetbuildtools(Package):
 
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
-    version('v5_07_00', git='http://cdcvs.fnal.gov/projects/cetbuildtools',tag='v5_07_00')
-    version('v5_06_06', git='http://cdcvs.fnal.gov/projects/cetbuildtools',tag='v5_06_06')
+    version('v1_01_00',git='http://cdcvs.fnal.gov/projects/cetlib_except',tag='v1_01_00')
 
     # FIXME: Add dependencies if required.
     # depends_on('foo')
-    depends_on('ups')
-    depends_on('cetpkgsupport')
-    depends_on('cmake')
+    depends_on('ups',type='build')
+    depends_on('cmake',type='build')
+    depends_on('cetbuildtools@v5_06_06',type='build')
 
-    def install(self,spec,prefix):
+    def install(self, spec, prefix):
+        name_=str(spec.name).replace('-','_')
         setups='%s/../../../products/setup'%spec['ups'].prefix
-        sfd='%s/%s/ups/setup_for_development'%(self.stage.path,spec.name)
+        sfd='%s/%s/ups/setup_for_development -p '%(self.stage.path,name_)
         bash=which('bash')
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
-            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s '%(setups,sfd,self.stage.path,spec.name,prefix),output=str,error=str)
+            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_CXX_FLAGS=-std=c++14'%(setups,sfd,self.stage.path,name_,self.prefix),output=str,error=str)
             print output
-            make('VERBOSE=1')
+            make()
             make('install')
         ln=which('ln')
-        mkdirp('%s/../../../products/%s'%(prefix,spec.name))
-        ln('-s','%s/%s/%s'%(prefix,spec.name,spec.version),'%s/../../../products/%s/%s'%(prefix,spec.name,spec.version))
-        ln('-s','%s/%s/%s.version'%(prefix,spec.name,spec.version),'%s/../../../products/%s/%s'%(prefix,spec.name,spec.version))
-
-    def setup_environment(self, spack_env, run_env):
-        run_env.prepend_path('PATH', '%s/%s/%s/bin'%(prefix,self.spec.name,self.spec.version))
-        spack_env.prepend_path('PATH', '%s/%s/%s/bin'%(prefix,self.spec.name,self.spec.version))
-
-    def setup_dependent_environment(self, spack_env, run_env, dspec):
-        run_env.prepend_path('PATH', '%s/%s/%s/bin'%(self.prefix,self.spec.name,self.spec.version))
-        spack_env.prepend_path('PATH', '%s/%s/%s/bin'%(self.prefix,self.spec.name,self.spec.version))
-
+        mkdirp('%s/../../../products/%s'%(prefix,name_))
+        ln('-s','%s/%s/%s'%(prefix,name_,spec.version),'%s/../../../products/%s'%(prefix,name_))
+        ln('-s','%s/%s/%s.version'%(prefix,name_,spec.version),'%s/../../../products/%s'%(prefix,name_))

@@ -51,30 +51,26 @@ class Cetpkgsupport(Package):
     depends_on('ups')
 
     def install(self,spec,prefix):
-        args = ['%s/cetpkgsupport' % self.stage.path]
-        args += ['-DCMAKE_INSTALL_PREFIX=%s'%self.prefix]
-        cmake=which('cmake')
-        ups=which('ups')
-        setups='%s/db/setup'%self.spec['ups'].prefix
-        sfd='%s/cetpkgsupport/ups/setup_for_development'%self.stage.path
+        setups='%s/../../../products/setup'%spec['ups'].prefix
+        sfd='%s/%s/ups/setup_for_development'%(self.stage.path,spec.name)
         bash=which('bash')
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
-            bash('-c','source %s;source %s;env'%(setups,sfd),output=str,error=str)
-            cmake(*args)
-            make()
+            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s '%(setups,sfd,self.stage.path,spec.name,prefix),output=str,error=str)
+            print output
+            make('VERBOSE=1')
             make('install')
-        ups=which('ups')
-        flavor=ups('flavor',output=str)
-        flvr=flavor.strip('\n')
-        ups('declare','cetpkgsupport','%s'%spec.version,'-f',flvr,'-r','%s'%prefix,'-m','%s/cetpkgsupport/%s/ups/cetpkgsupport.table'%(prefix,spec.version),'-C','-z','%s/db'%spec['ups'].prefix)
-        ups('declare','cetpkgsupport','%s'%spec.version,'-f',flvr,'-4','-C','-c','-z','%s/db'%spec['ups'].prefix)
+        ln=which('ln')
+        mkdirp('%s/../../../products/%s'%(spec.name,prefix))
+        ln('-s','%s/%s/%s'%(prefix,spec.name,spec.version),'%s/../../../products/%s'%(prefix,spec.name))
+        ln('-s','%s/%s/%s.version'%(prefix,spec.name,spec.version),'%s/../../../products/%s'%(prefix,spec.name))
+        ln('-s','%s/%s/current.chain'%(prefix,spec.name),'%s/../../../products/%s'%(prefix,spec.name))
 
     def setup_environment(self, spack_env, run_env):
-        run_env.prepend_path('PATH', '%s/cetpkgsupport/%s/bin'%(self.prefix,self.spec.version))
-        spack_env.prepend_path('PATH', '%s/cetpkgsupport/%s/bin'%(self.prefix,self.spec.version))
+        run_env.prepend_path('PATH', '%s/%s/%s/bin'%(prefix,self.spec.name,self.spec.version))
+        spack_env.prepend_path('PATH', '%s/%s/%s/bin'%(prefix,self.spec.name,self.spec.version))
 
     def setup_dependent_environment(self, spack_env, run_env, dspec):
-        run_env.prepend_path('PATH', '%s/cetpkgsupport/%s/bin'%(self.prefix,self.spec.version))
-        spack_env.prepend_path('PATH', '%s/cetpkgsupport/%s/bin'%(self.prefix,self.spec.version))
+        run_env.prepend_path('PATH', '%s/%s/%s/bin'%(self.prefix,self.spec.name,self.spec.version))
+        spack_env.prepend_path('PATH', '%s/%s/%s/bin'%(self.prefix,self.spec.name,self.spec.version))
 
