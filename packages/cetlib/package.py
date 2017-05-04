@@ -41,14 +41,7 @@ from spack import *
 from spack.environment import *
 
 class Cetlib(Package):
-    """FIXME: Put a proper description of your package here."""
 
-    # FIXME: Add a proper url for your package's homepage here.
-    #homepage = "http://www.example.com"
-    #url      = "http://www.example.com/example-1.2.3.tar.gz"
-
-    # FIXME: Add proper versions and checksums here.
-    # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version('v2_03_00',git='http://cdcvs.fnal.gov/projects/cetlib', tag='v2_03_00')
 
     # FIXME: Add dependencies if required.
@@ -62,19 +55,29 @@ class Cetlib(Package):
     depends_on("openssl")
 
     def install(self, spec, prefix):
-        cmake=which('cmake')
-        ups=which('ups')
-        setups='%s/../../../products/setup'%spec['ups'].prefix
-        sfd='%s/%s/ups/setup_for_development -p '%(self.stage.path,spec.name)
+        name_=str(spec.name).replace('-','_')
+        setups='%s/../products/setup'%spec['ups'].prefix
+        sfd='%s/%s/ups/setup_for_development -p '%(self.stage.path,name_)
         bash=which('bash')
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
-            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_CXX_FLAGS=-std=c++14'%(setups,sfd,self.stage.path,spec.name,self.prefix),output=str,error=str)
+            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14'%(setups,sfd,self.stage.path,name_,self.prefix),output=str,error=str)
             print output
             make('VERBOSE=1')
             make('install')
+        dst='%s/../products/%s'%(spec['ups'].prefix,name_)
+        mkdirp(dst)
+        src1=join_path(prefix,name_,spec.version)
+        src2=join_path(prefix,name_,'%s.version'%spec.version)
+        dst1=join_path(dst,spec.version)
+        dst2=join_path(dst,'%s.version'%spec.version)
+        if os.path.exists(dst1):
+           print 'symbolic link %s already exists'%dst1
+        else:
+           os.symlink(src1,dst1)
+        if os.path.exists(dst2):
+           print 'symbolic link %s already exists'%dst2
+        else:
+           os.symlink(src2,dst2)
         ln=which('ln')
-        name_=str(spec.name)
-        mkdirp('%s/../../../products/%s'%(prefix,name_))
-        ln('-s','%s/%s/%s'%(prefix,name_,spec.version),'%s/../../../products/%s'%(prefix,name_))
-        ln('-s','%s/%s/%s.version'%(prefix,name_,spec.version),'%s/../../../products/%s'%(prefix,name_))
+        ln('-s','%s/%s/%s/*/lib'%(prefix,name_,spec.version),'%s'%prefix)
