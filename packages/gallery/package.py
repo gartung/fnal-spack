@@ -41,43 +41,60 @@ from spack import *
 
 
 class Gallery(Package):
-    version('v1_03_02',git='http://cdcvs.fnal.gov/projects/gallery', tag='v1_03_02')
+    version(
+        'v1_03_02',
+        git='http://cdcvs.fnal.gov/projects/gallery',
+        tag='v1_03_02')
 
-    depends_on("cetbuildtools",type="build")
-    depends_on("cmake",type="build")
+    depends_on("cetbuildtools", type="build")
+    depends_on("cmake", type="build")
     depends_on("cetlib")
-    depends_on("boost@1.60.0")
+    depends_on("boost")
     depends_on("sqlite")
     depends_on("openssl")
 
     def install(self, spec, prefix):
-        cmake=which('cmake')
-        ups=which('ups')
-        setups='%s/../products/setup'%spec['ups'].prefix
-        sfd='%s/%s/ups/setup_for_development -p '%(self.stage.path,spec.name)
-        bash=which('bash')
+        cmake = which('cmake')
+        ups = which('ups')
+        setups = '%s/../products/setup' % spec['ups'].prefix
+        sfd = '%s/%s/ups/setup_for_development -p ' % (
+            self.stage.path, spec.name)
+        bash = which('bash')
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
-            output=bash('-c','source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=%{CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14'%(setups,sfd,self.stage.path,spec.name,self.prefix),output=str,error=str)
+            output = bash(
+                '-c',
+                'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=%{CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14' %
+                (setups,
+                 sfd,
+                 self.stage.path,
+                 spec.name,
+                 self.prefix),
+                output=str,
+                error=str)
             print output
             make('VERBOSE=1')
             make('install')
-        name_=str(spec.name).replace('-','')
+        name_ = str(spec.name).replace('-', '')
         print name_
-        dst='%s/../products/%s'%(prefix,name_)
+        dst = '%s/../products/%s' % (prefix, name_)
         mkdirp(dst)
-        src1=join_path(prefix,name_,spec.version)
-        src2=join_path(prefix,name_,'%s.version'%spec.version)
-        dst1=join_path(dst,spec.version)
-        dst2=join_path(dst,'%s.version'%spec.version)
+        src1 = join_path(prefix, name_, spec.version)
+        src2 = join_path(prefix, name_, '%s.version' % spec.version)
+        dst1 = join_path(dst, spec.version)
+        dst2 = join_path(dst, '%s.version' % spec.version)
         if os.path.exists(dst1):
-           print 'symbolic link %s already exists'%dst1
+            print 'symbolic link %s already exists' % dst1
         else:
-           os.symlink(src1,dst1)
+            os.symlink(src1, dst1)
         if os.path.exists(dst2):
-           print 'symbolic link %s already exists'%dst2
+            print 'symbolic link %s already exists' % dst2
         else:
-           os.symlink(src2,dst2)
-        ln=which('ln')
-        ln('-s','%s/%s/%s/*/lib'%(prefix,name_,spec.version),'%s'%prefix)
-
+            os.symlink(src2, dst2)
+        ln = which('ln')
+        ln('-s', '%s/%s/%s/*/lib' %
+           (prefix, name_, spec.version), '%s' %
+            prefix)
+        ln('-s', '%s/%s/%s/include' %
+           (prefix, name_, spec.version), '%s' %
+            prefix)

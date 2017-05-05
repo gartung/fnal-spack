@@ -32,20 +32,30 @@ class Ups(Package):
 
     # FIXME: Add a proper url for your package's homepage here.
     #homepage = "http://www.example.com"
-    url      = "http://home.fnal.gov/~gartung/ups-5.2.0-source.tar.bz2"
+    url = "http://home.fnal.gov/~gartung/ups-5.2.0-source.tar.bz2"
 
     version('5.2.0', '2a48103033661ff84359cb02fec09420')
 
-
     def install(self, spec, prefix):
-        make('all', 'UPS_DIR=%s'%self.stage.source_path, 'PRODUCTS=%s'%self.prefix)
-        rsync=which('rsync')
-        rsync('-av','--exclude=*.o','%s/ups/' % self.stage.path,'%s/' % self.prefix)
-        flvr='NULL'
-        mkdirp('%s/../products/.upsfiles'%self.prefix)
-        mkdirp('%s/../products/.updfiles'%self.prefix)
-        f=open('%s/../products/.upsfiles/dbconfig'%self.prefix,'w+')
-        contents="""
+        make(
+            'all',
+            'UPS_DIR=%s' %
+            self.stage.source_path,
+            'PRODUCTS=%s' %
+            self.prefix)
+        rsync = which('rsync')
+        rsync(
+            '-av',
+            '--exclude=*.o',
+            '%s/ups/' %
+            self.stage.path,
+            '%s/' %
+            self.prefix)
+        flvr = 'NULL'
+        mkdirp('%s/../products/.upsfiles' % self.prefix)
+        mkdirp('%s/../products/.updfiles' % self.prefix)
+        f = open('%s/../products/.upsfiles/dbconfig' % self.prefix, 'w+')
+        contents = """
 FILE = DBCONFIG
 AUTHORIZED_NODES = *
 VERSION_SUBDIR = 1
@@ -54,11 +64,11 @@ UPD_USERCODE_DIR = ${UPS_THIS_DB}/.updfiles
 """
         f.write(contents)
         f.close()
-        f=open('%s/../products/.updfiles/updusr.pm'%self.prefix,'w+')
+        f = open('%s/../products/.updfiles/updusr.pm' % self.prefix, 'w+')
         f.write("require 'default_updusr.pm';")
         f.close()
-        f=open('%s/../products/.updfiles/updconfig'%self.prefix,'w+')
-        contents="""
+        f = open('%s/../products/.updfiles/updconfig' % self.prefix, 'w+')
+        contents = """
 File = updconfig
 
 GROUP:
@@ -92,20 +102,28 @@ END:
 """
         f.write(contents)
         f.close()
-        f=open('%s/../products/setups_layout'%self.prefix,'w+')
+        f = open('%s/../products/setups_layout' % self.prefix, 'w+')
         f.write('s_setenv UPS_THIS_DB $SETUPS_DIR\n')
         f.write('s_setenv PROD_DIR_PREFIX $SETUPS_DIR\n')
         f.close()
 
-        ups=which('%s/bin/ups'%self.prefix)
-        flavor=ups('flavor',output=str)
-        flvr=flavor.strip('\n')
-        ups('declare','ups','v5_2_0','-f',flvr,'-r','%s'%self.prefix,'-4','-m','%s/ups/ups.table'%self.prefix,'-C','-z','%s/../products'%self.prefix)
-        ups('declare','ups','v5_2_0','-C','-c','-z','%s/../products'%self.prefix)
-        cp=which('cp')
-        cp('-p','%s/ups/setups'%self.prefix,'%s/../products/setups'%self.prefix)
-        cp('-p','%s/ups/setup'%self.prefix,'%s/../products/setup'%self.prefix)
-        
+        ups = which('%s/bin/ups' % self.prefix)
+        flavor = ups('flavor', output=str)
+        flvr = flavor.strip('\n')
+        ups('declare', 'ups', 'v5_2_0', '-f', flvr, '-r', '%s' %
+            self.prefix, '-4', '-m', '%s/ups/ups.table' %
+            self.prefix, '-C', '-z', '%s/../products' %
+            self.prefix)
+        ups('declare', 'ups', 'v5_2_0', '-C', '-c',
+            '-z', '%s/../products' % self.prefix)
+        cp = which('cp')
+        cp('-p', '%s/ups/setups' %
+           self.prefix, '%s/../products/setups' %
+           self.prefix)
+        cp('-p', '%s/ups/setup' %
+           self.prefix, '%s/../products/setup' %
+           self.prefix)
+
     def setup_environment(self, spack_env, run_env):
         run_env.prepend_path('PATH', self.prefix.bin)
         run_env.set('UPS_DIR', self.prefix)
@@ -117,4 +135,3 @@ END:
         run_env.set('UPS_DIR', self.prefix)
         run_env.set('UPS_SHELL', '/bin/bash')
         run_env.set('PRODUCTS', '%s/../products' % self.prefix)
-

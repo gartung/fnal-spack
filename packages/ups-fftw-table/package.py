@@ -31,24 +31,36 @@ class UpsFftwTable(Package):
 
     # FIXME: Add a proper url for your package's homepage here.
     homepage = "http://www.example.com"
-    url      = "http://www.example.com/example-1.2.3.tar.gz"
+    url = "http://www.example.com/example-1.2.3.tar.gz"
 
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
-    version('v3_3_6_pl1a',git='http://cdcvs.fnal.gov/projects/build-framework-fftw-ssi-build',tag='v3_3_6pl1a')
+    version(
+        'v3_3_6_pl1a',
+        git='http://cdcvs.fnal.gov/projects/build-framework-fftw-ssi-build',
+        tag='v3_3_6pl1a')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
     depends_on('ups-gcc-table')
-    depends_on('fftw@3.3.5',when='@v3_3_6pl1a')
+    depends_on('fftw@3.3.5', when='@v3_3_6pl1a')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
-        ups=which('ups')
-        flvr=ups('flavor',output=str).strip('\n')
+        ups = which('ups')
+        flvr = ups('flavor', output=str).strip('\n')
         print flvr
-        cp=which('cp')
-        cp('-rpv','%s/ups'%self.stage.source_path,'%s'%prefix)
-        perl=which('perl')
-        perl("-p", "-i~", "-e's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||'", "%s/ups/fftw.table"%prefix)
-        ups('declare','fftw','%s'%spec.version,'-r','%s'%spec['fftw'].prefix,'-f',flvr , '-q', 'e14:+prof', '-m','%s/ups/fftw.table'%prefix,'-z','%s/../products'%prefix)
+        cp = which('cp')
+        cp('-rpv', '%s/ups' % self.stage.source_path, '%s' % prefix)
+        perl = which('perl')
+        perl(
+            "-p",
+            "-i~",
+            "-e's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||'",
+            "%s/ups/fftw.table" %
+            prefix)
+        ups('declare', 'fftw', '%s' %
+            spec.version, '-r', '%s' %
+            spec['fftw'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/fftw.table' %
+            prefix, '-z', '%s/../products' %
+            prefix)
