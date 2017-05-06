@@ -42,38 +42,44 @@ import os
 
 
 class FhiclCpp(Package):
+    homepage='http://cdcvs.fnal.gov/projects/fhicl-cpp',
+
     version(
         'v4_04_00',
         git='http://cdcvs.fnal.gov/projects/fhicl-cpp',
         tag='v4_04_00')
+
     version(
         'v4_03_02',
         git='http://cdcvs.fnal.gov/projects/fhicl-cpp',
         tag='v4_03_02')
 
     depends_on("ups", type="build")
-    depends_on("cetbuildtools", type="build")
     depends_on("cmake", type="build")
+    depends_on("cetbuildtools", type="build")
     depends_on("cetlib")
-    depends_on("boost")
-    depends_on("sqlite")
-    depends_on("openssl")
+    depends_on("ups-boost-table")
+    depends_on("ups-sqlite-table")
+    depends_on("ups-openssl-table")
 
-    def install(self, spec, prefix):
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development -p ' % (
             self.stage.path, spec.name)
         bash = which('bash')
+        cmake_cmd = 'source %s ' % setups + '&& source %s ' % sfd + \
+            '&& cmake %s' % self.stage.source_path + \
+            ' -DCMAKE_INSTALL_PREFIX=%s' % prefix + \
+            ' -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14'
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
             output = bash(
-                '-c',
-                'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14' %
-                (setups,
-                 sfd,
-                 self.stage.path,
-                 spec.name,
-                 self.prefix),
+                '-c', cmake_cmd,
                 output=str,
                 error=str)
             print output
@@ -94,10 +100,10 @@ class FhiclCpp(Package):
             print 'symbolic link %s already exists' % dst2
         else:
             os.symlink(src2, dst2)
-        ln = which('ln')
-        ln('-s', '%s/%s/%s/*/lib' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
-        ln('-s', '%s/%s/%s/include' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
+#        ln = which('ln')
+#        ln('-s', '%s/%s/%s/*/lib' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)
+#        ln('-s', '%s/%s/%s/include' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)

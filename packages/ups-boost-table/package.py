@@ -37,12 +37,12 @@ class UpsBoostTable(Package):
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
         'v1_63_0a',
-        git='http://cdcvs.fnal.gov/projects/build-framework-boosr-ssi-build',
+        git='http://cdcvs.fnal.gov/projects/build-framework-boost-ssi-build',
         tag='v1_63_0a')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
-    depends_on('boost@1.63.0', when='@v1_63_0a')
+    depends_on('boost')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
@@ -53,10 +53,11 @@ class UpsBoostTable(Package):
         cp('-rpv', '%s/ups' % self.stage.source_path, '%s' % prefix)
         perl = which('perl')
         perl(
-            "-p",
-            "-i~",
-            "-e's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||'",
-            "%s/ups/boosr.table" %
+            '-p',
+            '-i~',
+            '-e',
+            's|\$\{BOOST_FQ_DIR\}|%s|'%prefix,
+            '%s/ups/boost.table' %
             prefix)
         ups(
             'declare',

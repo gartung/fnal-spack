@@ -45,11 +45,9 @@ class CetlibExcept(Package):
     """FIXME: Put a proper description of your package here."""
 
     # FIXME: Add a proper url for your package's homepage here.
-    #homepage = "http://www.example.com"
-    #url      = "http://www.example.com/example-1.2.3.tar.gz"
+    homepage = "http://www.example.com"
+    url      = "http://www.example.com/example-1.2.3.tar.gz"
 
-    # FIXME: Add proper versions and checksums here.
-    # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
         'v1_01_00',
         git='http://cdcvs.fnal.gov/projects/cetlib_except',
@@ -57,11 +55,17 @@ class CetlibExcept(Package):
 
     # FIXME: Add dependencies if required.
     # depends_on('foo')
-    depends_on('ups', type='build')
     depends_on('cmake', type='build')
-    depends_on('cetbuildtools@v5_06_06', type='build')
+    depends_on('cetbuildtools', type='build')
+    depends_on('ups')
+    depends_on('cetpkgsupport')
 
-    def install(self, spec, prefix):
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         name_ = str(spec.name).replace('-', '_')
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development -p ' % (self.stage.path, name_)
@@ -96,9 +100,9 @@ class CetlibExcept(Package):
         else:
             os.symlink(src2, dst2)
         ln = which('ln')
-        ln('-s', '%s/%s/%s/*/lib' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
-        ln('-s', '%s/%s/%s/include' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
+#        ln('-s', '%s/%s/%s/*/lib' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)
+#        ln('-s', '%s/%s/%s/include' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)

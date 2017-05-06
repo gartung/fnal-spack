@@ -26,7 +26,7 @@
 from spack import *
 
 
-class UpsRootTable(Package):
+class UpsPythia6Table(Package):
     """FIXME: Put a proper description of your package here."""
 
     # FIXME: Add a proper url for your package's homepage here.
@@ -36,41 +36,13 @@ class UpsRootTable(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'v6_08_06e',
-        git='http://cdcvs.fnal.gov/projects/build-framework-root-ssi-build',
-        tag='v6_08_06e')
+        'v6_4_28',
+        git='http://cdcvs.fnal.gov/projects/build-framework-pythia-ssi-build',
+        tag='v6_4_28')
 
-    version(
-        'v6_08_06d',
-        git='http://cdcvs.fnal.gov/projects/build-framework-root-ssi-build',
-        tag='v6_08_06d')
-
-    version(
-        'v6_08_04e',
-        git='http://cdcvs.fnal.gov/projects/build-framework-root-ssi-build',
-        tag='v6_08_04e')
-
-    version(
-        'v6_08_04c',
-        git='http://cdcvs.fnal.gov/projects/build-framework-root-ssi-build',
-        tag='v6_08_04c')
-
-
-    variant('nu', default=False, description='Enable nu options for ROOT')
     # FIXME: Add dependencies if required.
     depends_on('ups')
-    depends_on('root')
-    depends_on('ups-gcc-table')
-    depends_on('ups-fftw-table')
-    depends_on('ups-sqlite-table')
-    depends_on('ups-libxml2-table')
-    depends_on('ups-xrootd-table')
-    depends_on('ups-python-table')
-    depends_on('ups-gsl-table',when='+nu')
-    depends_on('ups-pythia6-table',when='+nu')
-    depends_on('ups-postgresql-table',when='+nu')
-    depends_on('ups-mysql-client-table',when='+nu')
-
+    depends_on('pythia6')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
@@ -84,11 +56,22 @@ class UpsRootTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||',
-            '%s/ups/root.table' %
+            's|\$\{PYTHIA_FQ_DIR\}|%s|'%prefix,
+            '%s/ups/pythia.table' %
             prefix)
-        ups('declare', 'root', '%s' %
-            spec.version, '-r', '%s' %
-            spec['root'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/root.table' %
-            prefix, '-z', '%s/../products' %
+        ups(
+            'declare',
+            'pythia',
+            '%s' %
+            spec.version,
+            '-r',
+            '%s' %
+            spec['pythia6'].prefix,
+            '-f',
+            flvr,
+            '-m',
+            '%s/ups/pythia.table' %
+            prefix,
+            '-z',
+            '%s/../products' %
             prefix)

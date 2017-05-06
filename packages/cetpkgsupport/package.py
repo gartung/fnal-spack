@@ -33,10 +33,12 @@ class Cetpkgsupport(Package):
         'v1_11_00',
         git='http://cdcvs.fnal.gov/projects/cetpkgsupport',
         tag='v1_11_00')
+
     version(
         'v1_10_02',
         git='http://cdcvs.fnal.gov/projects/cetpkgsupport',
         tag='v1_10_02')
+
     version(
         'v1_10_01',
         git='http://cdcvs.fnal.gov/projects/cetpkgsupport',
@@ -45,10 +47,27 @@ class Cetpkgsupport(Package):
     depends_on('cmake')
     depends_on('ups')
 
-    def install(self, spec, prefix):
+
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development' % (self.stage.path, spec.name)
         bash = which('bash')
+        ups = which('ups')
+        flvr = ups('flavor', output=str).strip('\n')
+        output = bash(
+            '-c',
+            'source ' + setups + ' && %s/bin/product-stub' % self.stage.source_path + ' -f ' +
+            flvr + ' cmake v3_3_2 ' +
+            '%s' % spec['cmake'].prefix +
+            ' %s/../products' % spec['ups'].prefix,
+            output=str,
+            error=str)
+        print output
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
             output = bash(

@@ -28,36 +28,43 @@ import os
 
 class Messagefacility(Package):
 
+    homepage='http://cdcvs.fnal.gov/projects/messagefacility',
+
     version(
         'v1_18_03',
         git='http://cdcvs.fnal.gov/projects/messagefacility',
         tag='v1_18_03')
+
     version(
         'v1_18_04',
         git='http://cdcvs.fnal.gov/projects/messagefacility',
         tag='v1_18_04')
 
-    depends_on("ups", type="build")
-    depends_on("cetbuildtools", type="build")
     depends_on("cmake", type="build")
+    depends_on("cetbuildtools", type="build")
+    depends_on("ups")
+    depends_on("cetpkgsupport")
     depends_on("fhicl-cpp")
-    depends_on("tbb")
+    depends_on("ups-tbb-table")
 
-    def install(self, spec, prefix):
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         name_ = str(spec.name).replace('-', '_')
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development -p ' % (self.stage.path, name_)
         bash = which('bash')
+        cmake_cmd = 'source %s' % setups + ' && source %s ' % sfd + \
+            '&& cmake %s' % self.stage.source_path + \
+            ' -DCMAKE_INSTALL_PREFIX=%s' % prefix + \
+            ' -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14'
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
             output = bash(
-                '-c',
-                'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14' %
-                (setups,
-                 sfd,
-                 self.stage.path,
-                 name_,
-                 self.prefix),
+                '-c', cmake_cmd,
                 output=str,
                 error=str)
             print output
@@ -77,10 +84,10 @@ class Messagefacility(Package):
             print 'symbolic link %s already exists' % dst2
         else:
             os.symlink(src2, dst2)
-        ln = which('ln')
-        ln('-s', '%s/%s/%s/*/lib' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
-        ln('-s', '%s/%s/%s/include' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
+#        ln = which('ln')
+#        ln('-s', '%s/%s/%s/*/lib' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)
+#        ln('-s', '%s/%s/%s/include' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)

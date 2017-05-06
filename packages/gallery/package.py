@@ -41,19 +41,28 @@ from spack import *
 
 
 class Gallery(Package):
+
+    homepage='http://cdcvs.fnal.gov/projects/gallery',
+
     version(
         'v1_03_02',
         git='http://cdcvs.fnal.gov/projects/gallery',
         tag='v1_03_02')
 
-    depends_on("cetbuildtools", type="build")
-    depends_on("cmake", type="build")
-    depends_on("cetlib")
-    depends_on("boost")
-    depends_on("sqlite")
-    depends_on("openssl")
+    variant('nu',default=False, description='Enable nu dependencies')
 
-    def install(self, spec, prefix):
+    depends_on("cmake", type="build")
+    depends_on("cetbuildtools", type="build")
+    depends_on("ups")
+    depends_on("cetpkgsupport")
+    depends_on("canvas")
+
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         cmake = which('cmake')
         ups = which('ups')
         setups = '%s/../products/setup' % spec['ups'].prefix

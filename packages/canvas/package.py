@@ -27,24 +27,38 @@ import os
 
 
 class Canvas(Package):
-    version(
-        'v1_06_02',
-        git='http://cdcvs.fnal.gov/projects/canvas',
-        tag='v1_06_02')
+    homepage = 'http://cdcvs.fnal.gov/projects/canvas'
+    url = 'http://cdcvs.fnal.gov/projects/canvas'
 
-    depends_on("ups", type="build")
-    depends_on("cetbuildtools", type="build")
+    version(
+        'v1_06_03',
+        git='http://cdcvs.fnal.gov/projects/canvas',
+        tag='v1_06_03')
+
+    variant('nu', default=False, description='Enable nu dependencies')
+
     depends_on("cmake", type="build")
+    depends_on("cetbuildtools", type="build")
+    depends_on("ups")
+    depends_on("cetpkgsupport")
     depends_on("cetlib-except")
     depends_on("cetlib")
     depends_on("fhicl-cpp")
     depends_on("messagefacility")
-    depends_on("boost")
-    depends_on("sqlite")
-    depends_on("openssl")
-    depends_on("tbb")
+    depends_on("ups-boost-table")
+    depends_on("ups-sqlite-table")
+    depends_on("ups-openssl-table")
+    depends_on("ups-tbb-table")
+    depends_on("ups-root-table")
+    depends_on("ups-cppunit-table")
+    depends_on("ups-gcc-table")
 
-    def install(self, spec, prefix):
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         cmake = which('cmake')
         ups = which('ups')
         setups = '%s/../products/setup' % spec['ups'].prefix
@@ -52,15 +66,13 @@ class Canvas(Package):
             self.stage.path, spec.name)
         bash = which('bash')
         build_directory = join_path(self.stage.path, 'spack-build')
+        cmake_cmd = 'source %s &&' % setups + ' source %s &&' % sfd + \
+            ' cmake %s' % (self.stage.source_path) + ' -DCMAKE_INSTALL_PREFIX=%s' % prefix + \
+            ' -DCMAKE_BUILD_TYPE=${CETPKG_TYPE}' + \
+            ' -DCMAKE_CXX_FLAGS=-std=c++14 '
         with working_dir(build_directory, create=True):
             output = bash(
-                '-c',
-                'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14 ' %
-                (setups,
-                 sfd,
-                 self.stage.path,
-                 spec.name,
-                 self.prefix),
+                '-c', cmake_cmd,
                 output=str,
                 error=str)
             print output
@@ -82,10 +94,10 @@ class Canvas(Package):
             print 'symbolic link %s already exists' % dst2
         else:
             os.symlink(src2, dst2)
-        ln = which('ln')
-        ln('-s', '%s/%s/%s/*/lib' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
-        ln('-s', '%s/%s/%s/include' %
-           (prefix, name_, spec.version), '%s' %
-            prefix)
+#        ln = which('ln')
+#        ln('-s', '%s/%s/%s/lib' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)
+#        ln('-s', '%s/%s/%s/include' %
+#           (prefix, name_, spec.version), '%s' %
+#            prefix)

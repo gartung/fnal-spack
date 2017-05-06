@@ -47,7 +47,6 @@ class UpsGccTable(Package):
     # FIXME: Add a proper url for your package's homepage here.
     homepage = "http://cdcvs.fnal.gov/projects/build-framework-gcc-ssi-build"
     url = "http://cdcvs.fnal.gov/projects/build-framework-gcc-ssi-build"
-
     version(
         'v6_3_0',
         git='http://cdcvs.fnal.gov/projects/build-framework-gcc-ssi-build',

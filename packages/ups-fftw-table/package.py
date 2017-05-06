@@ -38,12 +38,11 @@ class UpsFftwTable(Package):
     version(
         'v3_3_6_pl1a',
         git='http://cdcvs.fnal.gov/projects/build-framework-fftw-ssi-build',
-        tag='v3_3_6pl1a')
+        tag='v3_3_6_pl1a')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
-    depends_on('ups-gcc-table')
-    depends_on('fftw@3.3.5', when='@v3_3_6pl1a')
+    depends_on('fftw')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
@@ -54,13 +53,14 @@ class UpsFftwTable(Package):
         cp('-rpv', '%s/ups' % self.stage.source_path, '%s' % prefix)
         perl = which('perl')
         perl(
-            "-p",
-            "-i~",
-            "-e's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||'",
-            "%s/ups/fftw.table" %
+            '-p',
+            '-i~',
+            '-e',
+            's|\$\{FFTW_FQ_DIR\}|%s|'%self.prefix,
+            '%s/ups/fftw.table' %
             prefix)
         ups('declare', 'fftw', '%s' %
             spec.version, '-r', '%s' %
-            spec['fftw'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/fftw.table' %
+            spec['fftw'].prefix, '-f', flvr, '-q', 'prof', '-m', '%s/ups/fftw.table' %
             prefix, '-z', '%s/../products' %
             prefix)
