@@ -56,7 +56,9 @@ class UpsBoostTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{BOOST_FQ_DIR\}|%s|'%prefix,
+            's|\$\{BOOST_FQ_DIR\}|%s|;'%spec['boost'].prefix + \
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['boost'].prefix + \
+            's|\$\{UPS_PROD_FLAVOR\}(-.*)*\)|\.\)|;',
             '%s/ups/boost.table' %
             prefix)
         ups(

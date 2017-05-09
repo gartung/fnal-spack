@@ -36,9 +36,9 @@ class UpsPostgresqlTable(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'master',
+        'v9_5_6',
         git='http://cdcvs.fnal.gov/projects/build-framework-postgresql-ssi-build',
-        branch='master')
+        tag='v9_5_6')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
@@ -56,7 +56,7 @@ class UpsPostgresqlTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{POSTGRESQL_FQ_DIR\}|%s|'%prefix,
+            's|\$\{POSTGRESQL_FQ_DIR\}|%s|' % spec['postgresql'].prefix,
             '%s/ups/postgresql.table' %
             prefix)
         ups(
@@ -68,7 +68,7 @@ class UpsPostgresqlTable(Package):
             '%s' %
             spec['postgresql'].prefix,
             '-f',
-            flvr,
+            flvr,'-q','p2713d',
             '-m',
             '%s/ups/postgresql.table' %
             prefix,

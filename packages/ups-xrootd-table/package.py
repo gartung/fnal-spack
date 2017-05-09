@@ -36,9 +36,9 @@ class UpsXrootdTable(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'v4_3_0',
+        'v4_5_0c',
         git='http://cdcvs.fnal.gov/projects/build-framework-xrootd-ssi-build',
-        tag='v4_3_0')
+        tag='v4_5_0c')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
@@ -56,9 +56,11 @@ class UpsXrootdTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{UPS_PROD_DIR\}|%s|;s|\$\{XROOTD_FQ\}|\.|',
-            '%s/ups/xrootd.table' %
-            prefix)
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['xrootd'].prefix + \
+            's|\$\{XROOTD_FQ\}|\.|;' + \
+            's| \$\{XROOTD_FQ\}/include |%s|;'  % spec['xrootd'].prefix + \
+            's|\$\{XROOTDROOT\}|%s|;' % spec['xrootd'].prefix,
+            '%s/ups/xrootd.table' % prefix)
         ups(
             'declare',
             'xrootd',
@@ -68,7 +70,7 @@ class UpsXrootdTable(Package):
             '%s' %
             spec['xrootd'].prefix,
             '-f',
-            flvr,
+            flvr, '-q', 'e14:+prof',
             '-m',
             '%s/ups/xrootd.table' %
             prefix,

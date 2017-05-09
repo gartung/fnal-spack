@@ -40,6 +40,17 @@ class UpsClhepTable(Package):
         git='http://cdcvs.fnal.gov/projects/build-framework-clhep-ssi-build',
         tag='v2_2_0_8a')
 
+    version(
+        'v2_3_4_3b',
+        git='http://cdcvs.fnal.gov/projects/build-framework-clhep-ssi-build',
+        tag='v2_3_4_3b')
+
+
+    version(
+        'v2_3_4_4',
+        git='http://cdcvs.fnal.gov/projects/build-framework-clhep-ssi-build',
+        tag='v2_3_4_4')
+
     # FIXME: Add dependencies if required.
     depends_on('ups')
     depends_on('clhep')
@@ -56,11 +67,11 @@ class UpsClhepTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||',
-            '%s/ups/clhep.table' %
-            prefix)
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['clhep'].prefix + \
+            's|\$\{UPS_PROD_FLAVOR\}(-.*)*\)|\.\)|;'+ \
+            's|\$\{\}|%s|;' % spec['clhep'].prefix,
+            '%s/ups/clhep.table' % prefix)
         ups('declare', 'clhep', '%s' %
             spec.version, '-r', '%s' %
             spec['clhep'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/clhep.table' %
-            prefix, '-z', '%s/../products' %
-            prefix)
+            prefix, '-z', '%s/../products' % prefix)

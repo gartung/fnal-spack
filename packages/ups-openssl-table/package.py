@@ -36,9 +36,9 @@ class UpsOpensslTable(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'v1_0_2j',
+        'v1_0_2h',
         git='http://cdcvs.fnal.gov/projects/build-framework-openssl-ssi-build',
-        branch='v1_0_2j')
+        branch='v1_0_2h')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
@@ -56,11 +56,11 @@ class UpsOpensslTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{OPENSSL_FQ_DIR\}|%s|'%prefix,
+            's|\$\{UPS_PROD_DIR\}|%s|;s|\$\{UPS_PROD_FLAVOR\}|\.|' % spec['openssl'].prefix,
             '%s/ups/openssl.table' %
             prefix)
         ups('declare', 'openssl', '%s' %
             spec.version, '-r', '%s' %
-            spec['openssl'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/openssl.table' %
+            spec['openssl'].prefix, '-f', flvr, '-m', '%s/ups/openssl.table' %
             prefix, '-z', '%s/../products' %
             prefix)

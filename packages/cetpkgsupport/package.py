@@ -47,13 +47,7 @@ class Cetpkgsupport(Package):
     depends_on('cmake')
     depends_on('ups')
 
-
-    def install(self,spec,prefix):
-        mkdirp('%s'%prefix)
-        rsync=which('rsync')
-        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
-
-    def realinstall(self, spec, prefix):
+    def install(self, spec, prefix):
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development' % (self.stage.path, spec.name)
         bash = which('bash')

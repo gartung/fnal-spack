@@ -36,9 +36,9 @@ class UpsPythia6Table(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'v6_4_28',
+        'v6_4_28g',
         git='http://cdcvs.fnal.gov/projects/build-framework-pythia-ssi-build',
-        tag='v6_4_28')
+        tag='v6_4_28g')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
@@ -56,7 +56,7 @@ class UpsPythia6Table(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{PYTHIA_FQ_DIR\}|%s|'%prefix,
+            's|\$\{PYTHIA_FQ_DIR\}|%s|' % spec['pythia6'].prefix,
             '%s/ups/pythia.table' %
             prefix)
         ups(
@@ -69,6 +69,7 @@ class UpsPythia6Table(Package):
             spec['pythia6'].prefix,
             '-f',
             flvr,
+            '-q','gcc630:+prof',
             '-m',
             '%s/ups/pythia.table' %
             prefix,

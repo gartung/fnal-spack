@@ -36,9 +36,9 @@ class UpsMysqlClientTable(Package):
     # FIXME: Add proper versions and checksums here.
     # version('1.2.3', '0123456789abcdef0123456789abcdef')
     version(
-        'v5_7_11',
+        'v5_5_54',
         git='http://cdcvs.fnal.gov/projects/build-framework-mysql-client-ssi-build',
-        tag='v5_7_11')
+        tag='v5_5_54')
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
@@ -56,7 +56,7 @@ class UpsMysqlClientTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{MYSQL_CLIENT_FQ_DIR\}|%s|'%prefix,
+            's|\$\{MYSQL_CLIENT_FQ_DIR\}|%s|'%spec['mysql'].prefix,
             '%s/ups/mysql_client.table' %
             prefix)
         ups(
@@ -69,6 +69,7 @@ class UpsMysqlClientTable(Package):
             spec['mysql'].prefix,
             '-f',
             flvr,
+            '-q','e14',
             '-m',
             '%s/ups/mysql_client.table' %
             prefix,

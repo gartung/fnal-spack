@@ -56,7 +56,7 @@ class UpsGslTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{GSL_FQ_DIR\}|%s|'%prefix,
+            's|\$\{GSL_FQ_DIR\}|%s|'%spec['gsl'].prefix,
             '%s/ups/gsl.table' %
             prefix)
         ups(

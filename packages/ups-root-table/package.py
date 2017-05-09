@@ -84,11 +84,19 @@ class UpsRootTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|/\$\{UPS_PROD_FLAVOR\}[^)/]*||',
-            '%s/ups/root.table' %
-            prefix)
-        ups('declare', 'root', '%s' %
-            spec.version, '-r', '%s' %
-            spec['root'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/root.table' %
-            prefix, '-z', '%s/../products' %
-            prefix)
+            's|\$\{ROOTSYS\}|%s|;' % spec['root'].prefix + \
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['root'].prefix + \
+            's|\$\{UPS_PROD_FLAVOR\}(-.*)*\)|\.\)|;',
+            '%s/ups/root.table' % prefix)
+        if '+nu' in spec:
+            ups('declare', 'root', '%s' %
+                spec.version, '-r', '%s' %
+                spec['root'].prefix, '-f', flvr, '-q', 'e14:+prof:+nu', '-m', '%s/ups/root.table' %
+                prefix, '-z', '%s/../products' %
+                prefix)
+        else:
+            ups('declare', 'root', '%s' %
+                spec.version, '-r', '%s' %
+                spec['root'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/root.table' %
+                prefix, '-z', '%s/../products' %
+                prefix)

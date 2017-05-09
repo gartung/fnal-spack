@@ -38,11 +38,16 @@ class UpsLibxml2Table(Package):
     version(
         'v2_9_4',
         git='http://cdcvs.fnal.gov/projects/build-framework-libxml2-ssi-build',
-        branch='master')
+        tag='v2_9_4')
+    version(
+        'v2_9_4b',
+        git='http://cdcvs.fnal.gov/projects/build-framework-libxml2-ssi-build',
+        tag='v2_9_4b')
+
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
-    depends_on('libxml2')
+    depends_on('libxml2+python')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
@@ -56,7 +61,7 @@ class UpsLibxml2Table(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{LIBXML2_FQ_DIR\}|%s|'%prefix,
+            's|\$\{LIBXML2_FQ_DIR\}|%s|'%spec['libxml2'].prefix,
             '%s/ups/libxml2.table' %
             prefix)
         ups(
@@ -69,6 +74,7 @@ class UpsLibxml2Table(Package):
             spec['libxml2'].prefix,
             '-f',
             flvr,
+            '-q', 'prof',
             '-m',
             '%s/ups/libxml2.table' %
             prefix,

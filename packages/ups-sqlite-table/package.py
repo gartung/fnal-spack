@@ -56,7 +56,8 @@ class UpsSqliteTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{UPS_PROD_DIR\}|%s|;'%prefix+'s|\$\{SQLITE_FQ\}|\.|;'+'s|\$\{SQLITE_FQ_DIR\}|%s|'%prefix,
+            's|\$\{UPS_PROD_DIR\}|%s|;'%spec['sqlite'].prefix+'s|\$\{SQLITE_FQ\}|\.|;' + \
+            's|\$\{SQLITE_FQ_DIR\}|%s|'%spec['sqlite'].prefix,
             '%s/ups/sqlite.table' % prefix)
         ups(
             'declare',

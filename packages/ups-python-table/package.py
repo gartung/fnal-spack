@@ -61,7 +61,8 @@ class UpsPythonTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{PYTHONHOME\}|%s|;'%prefix+'s|\${UPS_PROD_DIR\}|%s|'%prefix,
+            's|\$\{PYTHONHOME\}|%s|;'%spec['python'].prefix + \
+            's|\${UPS_PROD_DIR\}|%s|'%spec['python'].prefix,
             '%s/ups/python.table' %
             prefix)
         ups('declare', 'python', '%s' %

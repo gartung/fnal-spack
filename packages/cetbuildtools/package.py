@@ -40,16 +40,21 @@ class Cetbuildtools(Package):
         git='http://cdcvs.fnal.gov/projects/cetbuildtools',
         tag='v5_06_06')
 
+    version(
+        'v5_06_07',
+        git='http://cdcvs.fnal.gov/projects/cetbuildtools',
+        tag='v5_06_07')
+
     depends_on('ups')
     depends_on('cetpkgsupport')
     depends_on('cmake')
 
-    def install(self,spec,prefix):
-        mkdirp('%s'%prefix)
-        rsync=which('rsync')
-        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+#    def install(self,spec,prefix):
+#        mkdirp('%s'%prefix)
+#        rsync=which('rsync')
+#        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
 
-    def realinstall(self, spec, prefix):
+    def install(self, spec, prefix):
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development' % (self.stage.path, spec.name)
         bash = which('bash')

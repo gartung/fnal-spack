@@ -56,7 +56,7 @@ class UpsTbbTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{TBB_FQ_DIR\}|%s|'%prefix,
+            's|\$\{TBB_FQ_DIR\}|%s|' % spec['tbb'].prefix,
             '%s/ups/tbb.table' %
             prefix)
         ups('declare', 'tbb', '%s' %

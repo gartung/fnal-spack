@@ -56,11 +56,12 @@ class UpsCppunitTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{CPPUNIT_FQ_DIR\}|%s|'%prefix,
-            '%s/ups/cppunit.table' %
-            prefix)
+            's|\$\{CPPUNIT_FQ_DIR\}|%s|;' % spec['cppunit'].prefix + \
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['cppunit'].prefix + \
+            's|\$\{UPS_PROD_FLAVOR\}(-.*)*\)|\.\)|;' + \
+            's|\$\{CPPUNIT_FQ\}|%s|;' % spec['cppunit'].prefix, 
+            '%s/ups/cppunit.table' % prefix)
         ups('declare', 'cppunit', '%s' %
             spec.version, '-r', '%s' %
             spec['cppunit'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/cppunit.table' %
-            prefix, '-z', '%s/../products' %
-            prefix)
+            prefix, '-z', '%s/../products' % prefix)

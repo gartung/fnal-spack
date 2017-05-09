@@ -47,12 +47,7 @@ class Messagefacility(Package):
     depends_on("fhicl-cpp")
     depends_on("ups-tbb-table")
 
-    def install(self,spec,prefix):
-        mkdirp('%s'%prefix)
-        rsync=which('rsync')
-        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
-
-    def realinstall(self, spec, prefix):
+    def install(self, spec, prefix):
         name_ = str(spec.name).replace('-', '_')
         setups = '%s/../products/setup' % spec['ups'].prefix
         sfd = '%s/%s/ups/setup_for_development -p ' % (self.stage.path, name_)
@@ -84,10 +79,10 @@ class Messagefacility(Package):
             print 'symbolic link %s already exists' % dst2
         else:
             os.symlink(src2, dst2)
-#        ln = which('ln')
-#        ln('-s', '%s/%s/%s/*/lib' %
-#           (prefix, name_, spec.version), '%s' %
-#            prefix)
-#        ln('-s', '%s/%s/%s/include' %
-#           (prefix, name_, spec.version), '%s' %
-#            prefix)
+        import glob
+        libdirs=glob.glob('%s'%prefix+'/*/*/*/lib*')
+        for libdir in libdirs:
+            os.symlink(libdir,join_path(prefix,'lib'))
+        incdirs=glob.glob('%s'%prefix+'/*/*/inlude*')
+        for incdir in incdirs:
+            os.symlink(incdir,join_path(prefix,'include'))

@@ -42,7 +42,7 @@ class UpsFftwTable(Package):
 
     # FIXME: Add dependencies if required.
     depends_on('ups')
-    depends_on('fftw')
+    depends_on('fftw~mpi')
 
     def install(self, spec, prefix):
         # FIXME: Unknown build system
@@ -56,11 +56,9 @@ class UpsFftwTable(Package):
             '-p',
             '-i~',
             '-e',
-            's|\$\{FFTW_FQ_DIR\}|%s|'%self.prefix,
-            '%s/ups/fftw.table' %
-            prefix)
+            's|\$\{FFTW_FQ_DIR\}|%s|' % spec['fftw'].prefix,
+            '%s/ups/fftw.table' % prefix)
         ups('declare', 'fftw', '%s' %
             spec.version, '-r', '%s' %
             spec['fftw'].prefix, '-f', flvr, '-q', 'prof', '-m', '%s/ups/fftw.table' %
-            prefix, '-z', '%s/../products' %
-            prefix)
+            prefix, '-z', '%s/../products' % prefix)
