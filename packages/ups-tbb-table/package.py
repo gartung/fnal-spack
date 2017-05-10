@@ -51,12 +51,15 @@ class UpsTbbTable(Package):
         print flvr
         cp = which('cp')
         cp('-rpv', '%s/ups' % self.stage.source_path, '%s' % prefix)
+        cp('-rpv','%s/patch/tbb/cmake' % self.stage.source_path, '%s/lib' % spec['tbb'].prefix)
         perl = which('perl')
         perl(
             '-p',
             '-i~',
             '-e',
-            's|\$\{TBB_FQ_DIR\}|%s|' % spec['tbb'].prefix,
+            's|\$\{TBB_FQ_DIR\}|%s|;' % spec['tbb'].prefix + \
+            's|\$\{UPS_PROD_DIR\}|%s|;' % spec['tbb'].prefix + \
+            's|\$\{UPS_PROD_FLAVOR\}(-.*)*\)|\.\)|;',
             '%s/ups/tbb.table' %
             prefix)
         ups('declare', 'tbb', '%s' %
@@ -64,3 +67,15 @@ class UpsTbbTable(Package):
             spec['tbb'].prefix, '-f', flvr, '-q', 'e14:+prof', '-m', '%s/ups/tbb.table' %
             prefix, '-z', '%s/../products' %
             prefix)
+        perl('-p', '-i~', '-e', 
+             's|\$\{CMAKE_CURRENT_LIST_DIR\}/../../../../../../|\$\{CMAKE_CURRENT_LIST_DIR\}/../../../../|;',
+             '%s/lib/cmake/tbb-config.cmake' % spec['tbb'].prefix) 
+        perl('-p', '-i~',
+             '-e', 's|%%%PKGVER%%%'+'|%s|;' % spec.version + 's|%%%PKGDOTVER%%%'+'|%s|;' % 
+             str(spec.version).replace('v','').replace('_','.'),
+             '%s/lib/cmake/tbb-config-version.cmake' % spec['tbb'].prefix)
+        perl('-wapi~',
+             '-e', 's|%%%PKGVER%%%'+'|%s|;' % spec.version + \
+             's|%%%PKGDOTVER%%%'+'|%s|;' % 
+             str(spec.version).replace('v','').replace('_','.'),
+             '%s/lib/cmake/tbb-config.cmake' % spec['tbb'].prefix) 
