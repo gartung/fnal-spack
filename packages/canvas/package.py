@@ -58,7 +58,12 @@ class Canvas(Package):
     depends_on("ups-cppunit-table")
     depends_on("ups-gcc-table")
 
-    def install(self, spec, prefix):
+    def install(self,spec,prefix):
+        mkdirp('%s'%prefix)
+        rsync=which('rsync')
+        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
+
+    def realinstall(self, spec, prefix):
         cmake = which('cmake')
         ups = which('ups')
         setups = '%s/../products/setup' % spec['ups'].prefix

@@ -45,9 +45,9 @@ class Gallery(Package):
     homepage='http://cdcvs.fnal.gov/projects/gallery',
 
     version(
-        'v1_03_02',
+        'v1_03_12',
         git='http://cdcvs.fnal.gov/projects/gallery',
-        tag='v1_03_02')
+        tag='v1_03_12')
 
     variant('nu',default=False, description='Enable nu dependencies')
 
@@ -55,7 +55,8 @@ class Gallery(Package):
     depends_on("cetbuildtools", type="build")
     depends_on("ups")
     depends_on("cetpkgsupport")
-    depends_on("canvas")
+    depends_on("canvas@v1_06_04",when='@v1_03_12')
+    depends_on("canvas@v1_06_04+nu",when='@v1_03_12+nu')
 
     def install(self,spec,prefix):
         mkdirp('%s'%prefix)

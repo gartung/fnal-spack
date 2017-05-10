@@ -54,8 +54,8 @@ class Larsoftobj(Package):
     depends_on("cetbuildtools", type="build")
     depends_on("ups")
     depends_on("cetpkgsupport")
-    depends_on("lardataobj")
-    depends_on("gallery+nu^canvas+nu")
+    depends_on("lardataobj@v1_15_02",when='@v1_19_01')
+    depends_on("gallery+nu@v1_03_12^canvas+nu@v1_06_04",when='@v1_19_01')
 
     def install(self,spec,prefix):
         mkdirp('%s'%prefix)
