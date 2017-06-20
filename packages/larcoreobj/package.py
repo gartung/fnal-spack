@@ -50,9 +50,7 @@ class Larcoreobj(Package):
         tag='v1_13_01')
 
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
-    depends_on("ups")
-    depends_on("cetpkgsupport")
+    depends_on("cetmodules", type="build")
     depends_on("canvas+nu^ups-root-table+nu")
     depends_on("canvas+nu@v1_06_04^ups-root-table+nu",when='@v1_13_01')
 

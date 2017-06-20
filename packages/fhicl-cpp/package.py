@@ -54,13 +54,12 @@ class FhiclCpp(Package):
         git='http://cdcvs.fnal.gov/projects/fhicl-cpp',
         tag='v4_03_02')
 
-    depends_on("ups", type="build")
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
+    depends_on("cetmodules", type="build")
     depends_on("cetlib")
-    depends_on("ups-boost-table")
-    depends_on("ups-sqlite-table")
-    depends_on("ups-openssl-table")
+    depends_on("boost")
+    depends_on("sqlite")
+    depends_on("openssl")
 
     def install(self, spec, prefix):
         setups = '%s/../products/setup' % spec['ups'].prefix

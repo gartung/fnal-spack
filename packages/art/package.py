@@ -37,9 +37,7 @@ class Art(Package):
     variant('nu',default=False, description='Enable nu dependencies')
 
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
-    depends_on("ups")
-    depends_on("cetpkgsupport")
+    depends_on("cetmodules", type="build")
     depends_on("canvas")
 
     def install(self,spec,prefix):

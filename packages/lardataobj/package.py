@@ -50,9 +50,7 @@ class Lardataobj(Package):
         tag='v1_15_02')
 
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
-    depends_on("ups")
-    depends_on("cetpkgsupport")
+    depends_on("cetmodules", type="build")
     depends_on("nusimdata")
     depends_on("larcoreobj")
     depends_on("canvas+nu^ups-root-table+nu")
