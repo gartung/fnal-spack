@@ -1,0 +1,136 @@
+diff --git a/CondFormats/Serialization/python/condformats_serialization_generate.py b/CondFormats/Serialization/python/condformats_serialization_generate.py
+index e0d730302e0..1dae199fb63 100755
+--- a/CondFormats/Serialization/python/condformats_serialization_generate.py
++++ b/CondFormats/Serialization/python/condformats_serialization_generate.py
+@@ -29,7 +29,7 @@ import subprocess
+
+ import clang.cindex
+
+-clang_version = None
++clang_version = (4,0,1)
+
+ headers_template = '''
+ #include "{headers}"
+diff --git a/FWCore/Utilities/scripts/edmCheckClassTransients b/FWCore/Utilities/scripts/edmCheckClassTransients
+index e4f9ab28ed2..78fd31babb6 100755
+--- a/FWCore/Utilities/scripts/edmCheckClassTransients
++++ b/FWCore/Utilities/scripts/edmCheckClassTransients
+@@ -60,11 +60,37 @@ oparser.add_option("-f","--rootmap", dest="rmfiles", action="append", default=[]
+ 
+ #Need to not have ROOT load .rootlogon.(C|py) since it can cause interference.
+ import ROOT
++import os
++import re
++# On macos with SIP enabled we need to construct our own lib search path
++if "SCRAM_ARCH" in os.environ :
++    scram_arch=os.environ['SCRAM_ARCH']
++    localtop=os.path.abspath(os.path.dirname(os.path.realpath(__file__))+"/../../../..")
++    libpath=localtop+"/lib/"+scram_arch
++    extlibpath=localtop+"/external/"+scram_arch+"/lib"
++    ROOT.gSystem.AddDynamicPath(libpath)
++    ROOT.gSystem.AddDynamicPath(extlibpath)
++    if "RELEASETOP" in os.environ :
++       releasetop=os.environ['RELEASETOP']
++       rlibpath=releasetop+"/lib/"+scram_arch
++       rextlibpath=releasetop+"/external/"+scram_arch+"/lib"
++       ROOT.gSystem.AddDynamicPath(rlibpath)
++       ROOT.gSystem.AddDynamicPath(rextlibpath)
++    if "SPACK_LINK_DEPS" in os.environ :
++        for p in os.environ['SPACK_LINK_DEPS'].split(':') :
++            ppath=p+'/lib'
++            ROOT.gSystem.AddDynamicPath(ppath)
++    os.environ['DYLD_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++    os.environ['LD_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++    os.environ['DYLD_FALLBACK_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++
++
+ ROOT.PyConfig.DisableRootLogon = True
+ 
+ #Keep ROOT from trying to use X11
+ ROOT.gROOT.SetBatch(True)
+ ROOT.gROOT.ProcessLine(".autodict")
++
+ if options.library is None:
+     print "Transient member check requires a specific library"
+ else:
+diff --git a/FWCore/Utilities/scripts/edmCheckClassVersion b/FWCore/Utilities/scripts/edmCheckClassVersion
+index 3836d0cea92..0a8bb2dc949 100755
+--- a/FWCore/Utilities/scripts/edmCheckClassVersion
++++ b/FWCore/Utilities/scripts/edmCheckClassVersion
+@@ -1,5 +1,6 @@
+ #!  /usr/bin/env python
+ import string
++
+ from optparse import OptionParser
+ 
+ class XmlParser(object):
+@@ -162,12 +163,38 @@ oparser.add_option("-g","--generate_new",dest="generate", action="store_true",de
+ (options,args)=oparser.parse_args()
+ 
+ #Need to not have ROOT load .rootlogon.(C|py) since it can cause interference.
++
+ import ROOT
++import os
++import re
++# On macos with SIP enabled we need to construct our own lib search path
++if "SCRAM_ARCH" in os.environ :
++    scram_arch=os.environ['SCRAM_ARCH']
++    localtop=os.path.abspath(os.path.dirname(os.path.realpath(__file__))+"/../../../..")
++    libpath=localtop+"/lib/"+scram_arch
++    extlibpath=localtop+"/external/"+scram_arch+"/lib"
++    ROOT.gSystem.AddDynamicPath(libpath)
++    ROOT.gSystem.AddDynamicPath(extlibpath)
++    if "RELEASETOP" in os.environ :
++       releasetop=os.environ['RELEASETOP']
++       rlibpath=releasetop+"/lib/"+scram_arch
++       rextlibpath=releasetop+"/external/"+scram_arch+"/lib"
++       ROOT.gSystem.AddDynamicPath(rlibpath)
++       ROOT.gSystem.AddDynamicPath(rextlibpath)
++    if "SPACK_LINK_DEPS" in os.environ :
++        for p in os.environ['SPACK_LINK_DEPS'].split(':') :
++            ppath=p+'/lib'
++            ROOT.gSystem.AddDynamicPath(ppath)
++    os.environ['DYLD_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++    os.environ['LD_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++    os.environ['DYLD_FALLBACK_LIBRARY_PATH']=ROOT.gSystem.GetDynamicPath()
++
+ ROOT.PyConfig.DisableRootLogon = True
+ 
+ #Keep ROOT from trying to use X11
+ ROOT.gROOT.SetBatch(True)
+ ROOT.gROOT.ProcessLine(".autodict")
++
+ if options.library is None:
+     if options.checkdict :
+         print "Dictionary checks require a specific library"
+diff --git a/Fireworks/Core/BuildFile.xml b/Fireworks/Core/BuildFile.xml
+index a8b4b81875c..00674cca5b3 100644
+--- a/Fireworks/Core/BuildFile.xml
++++ b/Fireworks/Core/BuildFile.xml
+@@ -29,10 +29,10 @@
+ <lib name="Geom"/>
+ <lib name="GeomPainter"/>
+ <lib name="GuiHtml"/>
+-<architecture name="!amd64_clang8">
++<architecture name="!darwin">
+ <lib name="GX11"/>
+ </architecture>
+-<architecture name="amd64_clang8">
++<architecture name="darwin">
+ <lib name="GCocoa"/>
+ </architecture>
+ <lib name="RGL"/>
+diff --git a/SimDataFormats/GeneratorProducts/src/classes_def.xml b/SimDataFormats/GeneratorProducts/src/classes_def.xml
+index 637e608..23d90b3 100644
+--- a/SimDataFormats/GeneratorProducts/src/classes_def.xml
++++ b/SimDataFormats/GeneratorProducts/src/classes_def.xml
+@@ -16,7 +16,8 @@
+     <class name="HepMC::GenCrossSection" ClassVersion="10">
+      <version ClassVersion="10" checksum="920043842"/>
+     </class>
+-	<class name="HepMC::WeightContainer" ClassVersion="14">
++	<class name="HepMC::WeightContainer" ClassVersion="15">
++  <version ClassVersion="15" checksum="376377869"/>
+   <version ClassVersion="10" checksum="2163093401"/>
+   <version ClassVersion="11" checksum="376377869"/>
+   <version ClassVersion="12" checksum="2537869863"/>

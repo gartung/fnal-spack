@@ -1,0 +1,13 @@
+diff --git a/Fireworks/Core/CMakeLists.txt b/Fireworks/Core/CMakeLists.txt
+index 9721713..d0502c3 100644
+--- a/Fireworks/Core/CMakeLists.txt
++++ b/Fireworks/Core/CMakeLists.txt
+@@ -226,7 +226,7 @@ target_link_libraries(FireworksCore PUBLIC
+   FWCorePluginManager
+   FWCoreUtilities
+   FireworksTableWidget
+-  GCocoa
++  GX11
+   GLEW
+   Geom
+   GeomPainter

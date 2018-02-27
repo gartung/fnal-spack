@@ -1,0 +1,99 @@
+diff --git a/tools/clang/include/clang/Basic/Attr.td b/tools/clang/include/clang/Basic/Attr.td
+index fa60d51..8700028 100644
+--- a/tools/clang/include/clang/Basic/Attr.td
++++ b/tools/clang/include/clang/Basic/Attr.td
+@@ -375,6 +375,17 @@ def AbiTag : Attr {
+   let Documentation = [AbiTagsDocs];
+ }
+ 
++def CMSThreadSafe : InheritableAttr {
++  let Spellings = [ CXX11<"cms","thread_safe"> ];
++  let Documentation = [Undocumented];
++}
++
++def CMSThreadGuard : InheritableAttr {
++  let Spellings = [ CXX11<"cms","thread_guard"> ];
++  let Args = [StringArgument<"GuardVar">];
++  let Documentation = [Undocumented];
++}
++
+ def AddressSpace : TypeAttr {
+   let Spellings = [GNU<"address_space">];
+   let Args = [IntArgument<"AddressSpace">];
+diff --git a/tools/clang/lib/Driver/ToolChains.cpp b/tools/clang/lib/Driver/ToolChains.cpp
+index 9bc9ae4..34bbf0b 100644
+--- a/tools/clang/lib/Driver/ToolChains.cpp
++++ b/tools/clang/lib/Driver/ToolChains.cpp
+@@ -1389,6 +1389,8 @@ bool Generic_GCC::GCCVersion::isOlderThan(int RHSMajor, int RHSMinor,
+ }
+ 
+ static llvm::StringRef getGCCToolchainDir(const ArgList &Args) {
++  if (const char *S = ::getenv("COMPILER_RUNTIME_OBJECTS"))
++    return StringRef(S);
+   const Arg *A = Args.getLastArg(options::OPT_gcc_toolchain);
+   if (A)
+     return A->getValue();
+@@ -1554,7 +1556,7 @@ bool Generic_GCC::GCCInstallationDetector::getBiarchSibling(Multilib &M) const {
+       "x86_64-redhat-linux",    "x86_64-suse-linux",
+       "x86_64-manbo-linux-gnu", "x86_64-linux-gnu",
+       "x86_64-slackware-linux", "x86_64-linux-android",
+-      "x86_64-unknown-linux"};
++      "x86_64-unknown-linux",   "x86_64-redhat-linux-gnu"};
+   static const char *const X32LibDirs[] = {"/libx32"};
+   static const char *const X86LibDirs[] = {"/lib32", "/lib"};
+   static const char *const X86Triples[] = {
+diff --git a/tools/clang/lib/Sema/SemaDeclAttr.cpp b/tools/clang/lib/Sema/SemaDeclAttr.cpp
+index c6a5bc7..a637ecd 100644
+--- a/tools/clang/lib/Sema/SemaDeclAttr.cpp
++++ b/tools/clang/lib/Sema/SemaDeclAttr.cpp
+@@ -5628,6 +5628,37 @@ static void handleOpenCLAccessAttr(Sema &S, Decl *D,
+       Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+ }
+ 
++static void handleCMSThreadSafeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
++
++    assert(!Attr.isInvalid());
++
++    if (!(isa<Decl>(D))) {
++      S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
++        << Attr.getName();
++      return;
++    }
++
++    D->addAttr( ::new (S.Context) CMSThreadSafeAttr(Attr.getRange(), S.Context,
++						Attr.getAttributeSpellingListIndex()));
++}
++
++static void handleCMSThreadGuardAttr(Sema &S, Decl *D, const AttributeList &Attr) {
++    assert(!Attr.isInvalid());
++
++    if (!(isa<Decl>(D) ))  {
++      S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
++        << Attr.getName() << ExpectedVariableOrFunction;
++      return;
++    }
++    StringRef Str;
++    if (!S.checkStringLiteralArgumentAttr(Attr, 0, Str))
++      return;
++
++  D->addAttr(::new (S.Context) CMSThreadGuardAttr(Attr.getRange(), S.Context, Str,
++                                         Attr.getAttributeSpellingListIndex()));
++
++}
++
+ //===----------------------------------------------------------------------===//
+ // Top Level Sema Entry Points
+ //===----------------------------------------------------------------------===//
+@@ -6223,6 +6254,12 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
+   case AttributeList::AT_XRayInstrument:
+     handleSimpleAttribute<XRayInstrumentAttr>(S, D, Attr);
+     break;
++  case AttributeList::AT_CMSThreadSafe:
++    handleCMSThreadSafeAttr(S, D, Attr);
++    break;
++  case AttributeList::AT_CMSThreadGuard:
++    handleCMSThreadGuardAttr(S, D, Attr);
++    break;
+   }
+ }
+ 

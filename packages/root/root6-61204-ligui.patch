@@ -1,0 +1,54 @@
+From 218085f5c132930d88a014fd611cadd9ec577843 Mon Sep 17 00:00:00 2001
+From: Matevz Tadel <mtadel@ucsd.edu>
+Date: Fri, 15 Dec 2017 22:50:43 -0800
+Subject: [PATCH] Hacks around hash-check for TGLSAViewer. Other problems are
+ still there.
+
+---
+ gui/ged/src/TGedEditor.cxx | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/gui/ged/src/TGedEditor.cxx b/gui/ged/src/TGedEditor.cxx
+index 6fbbdfb5f60..91017023a69 100644
+--- a/gui/ged/src/TGedEditor.cxx
++++ b/gui/ged/src/TGedEditor.cxx
+@@ -74,6 +74,23 @@ class TGedTabInfo : public TObject {
+       fElement(el), fContainer(f) {}
+ };
+ 
++#include "THashList.h"
++
++namespace
++{
++   struct init_tgededitor_hash_check
++   {
++      init_tgededitor_hash_check()
++      {
++         std::unique_ptr<THashList>  h( new THashList  );
++         std::unique_ptr<TGedEditor> e( new TGedEditor );
++         h->AddLast(e.get());
++      }
++   };
++
++   // Does not work (unless libGui is loaded and used first, as in new TBrowser; new TGLSAViewer)
++   // init_tgededitor_hash_check init_tgededitor_hash_check_instance;
++}
+ 
+ ClassImp(TGedEditor);
+ 
+@@ -119,8 +136,15 @@ TGedEditor::TGedEditor(TCanvas* canvas, UInt_t width, UInt_t height) :
+ 
+    fTabContainer = GetEditorTab("Style");
+ 
++   // This hack works ... but also flashes an empty TGedEditor mainframe for a jiffie.
++   // Fixing the hash-valid entry before is required.
++   const TGWindow *cor = gClient->GetRoot();
++   gClient->SetRoot((TGWindow*) gClient->GetDefaultRoot());
++
+    gROOT->GetListOfCleanups()->Add(this);
+ 
++   gClient->SetRoot((TGWindow*) cor);
++
+    SetCanvas(canvas);
+    if (fCanvas) {
+       UInt_t ch = fCanvas->GetWindowHeight();
