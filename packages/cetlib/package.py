@@ -55,13 +55,12 @@ class Cetlib(Package):
         git='http://cdcvs.fnal.gov/projects/cetlib',
         tag='v2_02_00')
 
-    depends_on("ups", type="build")
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
+    depends_on("cetmodules", type="build")
     depends_on("cetlib-except")
-    depends_on("ups-boost-table")
-    depends_on("ups-sqlite-table")
-    depends_on("ups-openssl-table")
+    depends_on("boost")
+    depends_on("sqlite")
+    depends_on("openssl")
 
 #    def install(self,spec,prefix):
 #        mkdirp('%s'%prefix)

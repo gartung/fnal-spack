@@ -41,11 +41,9 @@ class Messagefacility(Package):
         tag='v1_18_04')
 
     depends_on("cmake", type="build")
-    depends_on("cetbuildtools", type="build")
-    depends_on("ups")
-    depends_on("cetpkgsupport")
+    depends_on("cetmodules", type="build")
     depends_on("fhicl-cpp")
-    depends_on("ups-tbb-table")
+    depends_on("tbb")
 
     def install(self, spec, prefix):
         name_ = str(spec.name).replace('-', '_')

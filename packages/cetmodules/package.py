@@ -22,61 +22,52 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
-#
-# This is a template package file for Spack.  We've put "FIXME"
-# next to all the things you'll want to change. Once you've handled
-# them, you can save this file and test your package like this:
-#
-#     spack install cetlib-except
-#
-# You can edit this file again by typing:
-#
-#     spack edit cetlib-except
-#
-# See the Spack documentation for more information on packaging.
-# If you submit this package back to Spack as a pull request,
-# please first remove this boilerplate and all FIXME comments.
-#
 from spack import *
 import os
 
-class CetlibExcept(Package):
-    """FIXME: Put a proper description of your package here."""
 
-    # FIXME: Add a proper url for your package's homepage here.
-    homepage = "http://www.example.com"
-    url      = "http://www.example.com/example-1.2.3.tar.gz"
+class Cetmodules(Package):
+
+    homepage='http://cdcvs.fnal.gov/projects/cetmodules',
 
     version(
-        'v1_01_00',
-        git='http://cdcvs.fnal.gov/projects/cetlib_except',
-        tag='v1_01_00')
+        'v0_01_00',
+        git='http://cdcvs.fnal.gov/projects/cetmodules',
+        tag='v0_01_00')
 
-    # FIXME: Add dependencies if required.
-    # depends_on('foo')
-    depends_on('cmake', type='build')
-    depends_on('cetmodules', type='build')
+    depends_on('cmake')
+
+#    def install(self,spec,prefix):
+#        mkdirp('%s'%prefix)
+#        rsync=which('rsync')
+#        rsync('-a', '-v', '%s'%self.stage.source_path, '%s'%prefix)
 
     def install(self, spec, prefix):
-        name_ = str(spec.name).replace('-', '_')
         setups = '%s/../products/setup' % spec['ups'].prefix
-        sfd = '%s/%s/ups/setup_for_development -p ' % (self.stage.path, name_)
+        sfd = '%s/%s/ups/setup_for_development' % (self.stage.path, spec.name)
         bash = which('bash')
+        ups = which('ups')
+        flvr = ups('flavor', output=str).strip('\n')
+        output = bash(
+            '-c',
+            'source ' + setups + ' && %s/%s/%s/bin/product-stub' %
+            (spec['cetpkgsupport'].prefix, spec['cetpkgsupport'].name, spec['cetpkgsupport'].version) +
+            ' -f ' + flvr + ' cmake v3_7_1 ' +
+            '%s' % spec['cmake'].prefix +
+            ' %s/../products' % spec['ups'].prefix,
+            output=str,
+            error=str)
+        print output
         build_directory = join_path(self.stage.path, 'spack-build')
         with working_dir(build_directory, create=True):
             output = bash(
-                '-c',
-                'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s -DCMAKE_BUILD_TYPE=${CETPKG_TYPE} -DCMAKE_CXX_FLAGS=-std=c++14' %
-                (setups,
-                 sfd,
-                 self.stage.path,
-                 name_,
-                 self.prefix),
-                output=str,
-                error=str)
+                '-c', 'source %s && source %s && cmake %s/%s -DCMAKE_INSTALL_PREFIX=%s ' %
+                (setups, sfd, self.stage.path, spec.name, prefix), output=str, error=str)
             print output
             make('VERBOSE=1')
             make('install')
+        name_ = str(spec.name)
+        print name_
         dst = '%s/../products/%s' % (spec['ups'].prefix, name_)
         mkdirp(dst)
         src1 = join_path(prefix, name_, spec.version)
@@ -91,10 +82,18 @@ class CetlibExcept(Package):
             print 'symbolic link %s already exists' % dst2
         else:
             os.symlink(src2, dst2)
-        import glob
-        libdirs=glob.glob('%s'%prefix+'/*/*/*/lib*')
-        for libdir in libdirs:
-            os.symlink(libdir,join_path(prefix,'lib'))
-        incdirs=glob.glob('%s'%prefix+'/*/*/inlude*')
-        for incdir in incdirs:
-            os.symlink(incdir,join_path(prefix,'include'))
+
+    def setup_environment(self, spack_env, run_env):
+        run_env.prepend_path(
+            'PATH', '%s/%s/%s/bin' %
+            (prefix, self.spec.name, self.spec.version))
+        spack_env.prepend_path(
+            'PATH', '%s/%s/%s/bin' %
+            (prefix, self.spec.name, self.spec.version))
+
+    def setup_dependent_environment(self, spack_env, run_env, dspec):
+        run_env.prepend_path('PATH', '%s/%s/%s/bin' %
+                             (self.prefix, self.spec.name, self.spec.version))
+        spack_env.prepend_path(
+            'PATH', '%s/%s/%s/bin' %
+            (self.prefix, self.spec.name, self.spec.version))
