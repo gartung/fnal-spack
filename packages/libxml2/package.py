@@ -23,7 +23,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
-
+import os
 
 class Libxml2(AutotoolsPackage):
     """Libxml2 is the XML C parser and toolkit developed for the Gnome
@@ -50,6 +50,10 @@ class Libxml2(AutotoolsPackage):
         args = ["--with-lzma=%s" % spec['xz'].prefix]
 
         if '+python' in spec:
+            site_packages_dir = os.path.join(self.spec.prefix,
+                                             'lib/python%s/site-packages' %
+                                             (spec['python'].version.up_to(2)))
+
             args.extend([
                 '--with-python={0}'.format(spec['python'].home),
                 '--with-python-install-dir={0}'.format(site_packages_dir)

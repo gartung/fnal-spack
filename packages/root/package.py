@@ -27,7 +27,7 @@ from spack import *
 import sys
 import re
 import os
-
+from spack.build_environment import dso_suffix
 
 class Root(CMakePackage):
     """ROOT is a data analysis framework."""

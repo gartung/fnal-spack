@@ -23,7 +23,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
-
+from spack.build_environment import dso_suffix
 
 class Davix(CMakePackage):
     """FIXME: Put a proper description of your package here."""
